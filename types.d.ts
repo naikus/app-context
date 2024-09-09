@@ -1,5 +1,7 @@
+import {NsEventListener, NsEventEmitter} from "./lib/namespaced-emitter";
 
-export interface ModuleDefn<T> {
+
+export interface ModuleDefn extends Object {
   /**
    * The name of the application module
    */
@@ -9,14 +11,14 @@ export interface ModuleDefn<T> {
   /**
    * The module impmentation
    */
-  module: ?T;
+  module?: any | null | undefined;
 
   /**
    * Initialize this module and return the actual module.
    * This module can by any object, value, service, function, etc.
    * @param {AppContext} context The application context
    */
-  async initialize(context: AppContext): Promise<T>;
+  async initialize(context: AppContext): Promise<any> | any;
 }
 
 /**
@@ -37,7 +39,7 @@ export interface ModuleDefn<T> {
  * </code>
  *
  */
-export interface AppContext {
+export interface AppContext extends Object {
   /**
    * Register a module with the application context. Module defination has a name and initialize(context)
    * async function (Returns a promise) The promise can resolve to any object or service.
@@ -80,5 +82,30 @@ export interface AppContext {
    *  const [foo, bar] = await context.dependency(["foo", "bar"]);
    * </code>
    */
-  dependency(name: string|[string], handler?): Promise<any|[any]> | void;
+  dependency(name: string|Array<string>, handler?: function(...*)): Promise<any|Array<any>> | void;
+
+  /**
+   * Register for a context event
+   * @memberof ApplicationContext#
+   * @see #once
+   * @param {String} event The event name.
+   * @param {Function} handler The handler to call
+   * @return {Function} The unsubscribe function
+   */
+  on(event: string, handler: NsEventListener): Function;
+
+  /**
+   * Register for a context event to be called only once
+   * @param {string} event The event name e.g. module:init or module:
+   * @param handler The event handler
+   * @return {Function} The unsubscribe function
+   */
+  once(event: string, handler: NsEventListener): Function;
+
+  emit(event: string, ...args: any[]): void;
+}
+
+export interface AppContextModule {
+  create(): AppContext;
+  createNsEmitter(separator?: string): NsEventEmitter;
 }

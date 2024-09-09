@@ -1,6 +1,10 @@
 const createAppContext = require("../lib/context"),
     app = createAppContext();
 
+app.on("module:", (mod, ...args) => {
+  console.log(`[Example]  Loaded module ${mod}`);
+});
+
 Promise.all([
   app.register({
     name: "module_a",
@@ -21,7 +25,9 @@ Promise.all([
     initialize(ctx) {
       return new Promise((res, reject) => {
         ctx.dependency("module_c", modC => {
+          console.log(`[module_b] Loading...`);
           setTimeout(_ => {
+            console.log(`[module_b] Done!`);
             res({
               toString() {
                 return `[modB ${modC}]`;
@@ -46,6 +52,7 @@ Promise.all([
   app.register({
     name: "module_d_factory",
     initialize(ctx) {
+      /** @type {Object|null|undefined} */
       let module;
       return () => {
         if(!module) {
