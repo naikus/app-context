@@ -1,4 +1,4 @@
-import {NsEventListener, NsEventEmitter} from "./lib/namespaced-emitter";
+import {NsEventListener, NsEventEmitter, EventListener} from "./lib/namespaced-emitter";
 
 
 export interface ModuleDefn extends Object {
@@ -43,7 +43,6 @@ export interface AppContext extends Object {
   /**
    * Register a module with the application context. Module defination has a name and initialize(context)
    * async function (Returns a promise) The promise can resolve to any object or service.
-   * @memberof ApplicationContext#
    * @param {ModuleDefn} moduleDefn The module definition with following structure
    * @example
    * <code>
@@ -59,7 +58,6 @@ export interface AppContext extends Object {
 
   /**
    * Gets a module by name or null if the module does not exist
-   * @memberof ApplicationContext#
    * @param {String} name The module name with which it was registered
    * @return {any} The module or null of module was not found
    */
@@ -67,7 +65,6 @@ export interface AppContext extends Object {
 
   /**
    * Register to be nodified when a dependent module was registered and initialized
-   * @memberof ApplicationContext#
    * @param {String|[String]} name A string or an arry of string module names
    * @param {Function} handler The handler to be called when all the dependencies are satisfied.
    * The handler is called with the dependencies as arguments in the order they were specified in
@@ -86,13 +83,12 @@ export interface AppContext extends Object {
 
   /**
    * Register for a context event
-   * @memberof ApplicationContext#
    * @see #once
    * @param {String} event The event name.
    * @param {Function} handler The handler to call
    * @return {Function} The unsubscribe function
    */
-  on(event: string, handler: NsEventListener): Function;
+  on(event: string, handler: NsEventListener|EventListener): Function;
 
   /**
    * Register for a context event to be called only once
@@ -100,7 +96,7 @@ export interface AppContext extends Object {
    * @param handler The event handler
    * @return {Function} The unsubscribe function
    */
-  once(event: string, handler: NsEventListener): Function;
+  once(event: string, handler: NsEventListener|EventListener ): Function;
 
   emit(event: string, ...args: any[]): void;
 }

@@ -1,9 +1,17 @@
 const createAppContext = require("../lib/context"),
     app = createAppContext();
 
-app.on("module:", (mod, ...args) => {
-  console.log(`[Example]  Loaded module ${mod}`);
-});
+
+app.on(
+  "module:",
+  /**
+   * @param {string} mod 
+   */
+  (mod) => {
+    console.log(`[Example]  Loaded module ${mod}`);
+  }
+);
+
 
 Promise.all([
   app.register({
