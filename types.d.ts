@@ -7,7 +7,6 @@ export interface ModuleDefn extends Object {
    */
   name: string;
 
-
   /**
    * The module impmentation
    */
@@ -54,7 +53,9 @@ export interface AppContext extends Object {
    *  context.register(defn)
    * </code>
    */
-  async register(module: ModuleDefn): Promise<ModuleDefn>;
+  async register(module: ModuleDefn): Promise<void>;
+
+  async start(): Promise<any>;
 
   /**
    * Gets a module by name or null if the module does not exist
