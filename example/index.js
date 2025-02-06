@@ -19,7 +19,7 @@ g.addE("c", "d");
 g.addE("d", "e");
 // g.addE("e", "a");
 
-console.log(g.checkDeps("a").reverse().join("->"));
+// console.log(g.checkDeps("a").reverse().join("->"));
 
 
 
@@ -60,7 +60,7 @@ app.register({
 app.register({
   name: "module_b",
   async initialize(ctx) {
-    const modC = await ctx.dependency("module_c");
+    const modC = await ctx.dependency(["module_c"]);
     return delayReturn({
       get name() {
         return `MODULE_B <-> ${modC.toString()}`;
@@ -86,7 +86,7 @@ app.register({
   name: "module_d_factory",
   async initialize(ctx) {
     /** @type {Object|null|undefined} */
-    const modA = await ctx.dependency("module_a");
+    // const modA = await ctx.dependency("module_a");
     /** @type {{
      *  name: string,
      *  toString(): string
@@ -108,12 +108,15 @@ app.register({
   }
 });
 
+app.dependency(["module_a"], (m) => {
+  console.log("found", m.name);
+})
+
 app.start().then(async () => {
   console.log("Ready!");
-  const modFac = app.getModule("module_d_factory"),
-      mod = await modFac();
+  const modFac = app.getModule("module_d_factory");
+  // console.log(modFac);
+  const mod = await modFac();
   console.log(mod.toString());
 });
-
-
 
