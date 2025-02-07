@@ -15,12 +15,13 @@ g.addE("a", "b");
 g.addE("a", "c");
 g.addE("a", "d");
 g.addE("b", "c");
+g.addE("b", "d");
 g.addE("c", "d");
 g.addE("d", "e");
+
+// Circular dependency, will throw error
 // g.addE("e", "a");
-
-// console.log(g.checkDeps("a").reverse().join("->"));
-
+console.log(g.checkDeps("a").reverse().join("->"));
 
 
 
@@ -49,10 +50,7 @@ app.register({
     const [modB, modC, modDFac] = await ctx.dependency(["module_b", "module_c", "module_d_factory"]);
     return {
       get name() {
-        return `MODULE_A <-> ${modDFac().toString()}`;
-      },
-      toString() {
-        return `modA`;
+        return `Module A`;
       }
     };
   }
@@ -60,13 +58,15 @@ app.register({
 app.register({
   name: "module_b",
   async initialize(ctx) {
-    const modC = await ctx.dependency(["module_c"]);
+    const modC = await ctx.dependency(["module_c", "module_d_factory"]);
+
+    ctx.once("module:module_a", mod => {
+      console.log("[module_b] Got module_a:", mod.name);
+    });
+
     return delayReturn({
       get name() {
-        return `MODULE_B <-> ${modC.toString()}`;
-      },
-      toString() {
-        return `modB`;
+        return `Module B`;
       }
     });
   }
@@ -74,9 +74,17 @@ app.register({
 app.register({
   name: "module_c",
   initialize(ctx) {
+    // Circular dependency, will throw error
+    /*
+    ctx.dependency("module_b", (modB) => {
+      console.log("found", modB.name);
+    });
+    */
+    // Can't call start() from within a module, will throw error
+    // ctx.start();
     return {
-      toString() {
-        return "modC";
+      get name() {
+        return "Module C";
       }
     };
   }
@@ -89,7 +97,7 @@ app.register({
     // const modA = await ctx.dependency("module_a");
     /** @type {{
      *  name: string,
-     *  toString(): string
+     *  sayHello(): string
      * }} 
      */
     let module;
@@ -98,8 +106,8 @@ app.register({
         const modA = ctx.getModule("module_a");
         module = {
           name: "MODULE_D",
-          toString() {
-            return `[modD circular dep: ${modA}]`;
+          sayHello() {
+            return `Hello from ${modA.name}`;
           }
         };
       }
@@ -117,6 +125,6 @@ app.start().then(async () => {
   const modFac = app.getModule("module_d_factory");
   // console.log(modFac);
   const mod = await modFac();
-  console.log(mod.toString());
+  console.log(mod.sayHello());
 });
 

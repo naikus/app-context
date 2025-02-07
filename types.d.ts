@@ -8,17 +8,15 @@ export interface ModuleDefn extends Object {
   name: string;
 
   /**
-   * The module impmentation
-   */
-  module?: any | null | undefined;
-
-  /**
    * Initialize this module and return the actual module.
    * This module can by any object, value, service, function, etc.
    * @param {AppContext} context The application context
    */
   async initialize(context: AppContext): Promise<any> | any;
+
+  [key: string]: any;
 }
+
 
 /**
  * Application context provides access to other modules installed as part of the application. It provides
@@ -53,9 +51,7 @@ export interface AppContext extends Object {
    *  context.register(defn)
    * </code>
    */
-  async register(module: ModuleDefn): Promise<void>;
-
-  async start(): Promise<any>;
+  async register(module: ModuleDefn): Promise<ModuleDefn>;
 
   /**
    * Gets a module by name or null if the module does not exist
@@ -81,6 +77,13 @@ export interface AppContext extends Object {
    * </code>
    */
   dependency(name: string|Array<string>, handler?: function(...*)): Promise<any|Array<any>> | void;
+
+  /**
+   * Start the application context. This will initialize all the modules in the order they were registered
+   * and call the initialize function of each module.
+   * @return {Promise} A promise that resolves when all the modules are initialized
+   */
+  async start(): Promise<void>;
 
   /**
    * Register for a context event
