@@ -60,7 +60,7 @@ module.exports = {
 };
 ```
 
-Then in your main file. Wire all the services. The order is not important, app-context will instantiate
+Then in your main file, wire all the services. The order is not important, app-context will instantiate
 your services in the right order.
 ```js
 const webServer = require("./webserver"),
