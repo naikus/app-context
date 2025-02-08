@@ -5,7 +5,7 @@ missing modules and cyclic dependencies
 ### Usage
 
 In your package.json, add it as a dependency
-```json
+```json5
 {
   "name": "my-app",
   "version": "1.0.0",
