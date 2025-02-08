@@ -2,7 +2,7 @@ const createAppContext = require("../lib/context"),
     dGraph = require("../lib/dgraph"),
     app = createAppContext();
 
-
+/*
 const g = dGraph();
 g.addV("a");
 g.addV("b");
@@ -21,7 +21,8 @@ g.addE("d", "e");
 
 // Circular dependency, will throw error
 // g.addE("e", "a");
-console.log(g.checkDeps("a").reverse().join("->"));
+console.log(g.checkDeps("a"));
+*/
 
 
 
@@ -94,7 +95,7 @@ app.register({
   name: "module_d_factory",
   async initialize(ctx) {
     /** @type {Object|null|undefined} */
-    // const modA = await ctx.dependency("module_a");
+    const modA = await ctx.dependency("module_a");
     /** @type {{
      *  name: string,
      *  sayHello(): string
