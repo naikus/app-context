@@ -83,6 +83,8 @@ app.register({
     */
     // Can't call start() from within a module, will throw error
     // ctx.start();
+
+    // throw new Error("Raising error!");
     return {
       get name() {
         return "Module C";
