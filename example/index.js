@@ -95,7 +95,7 @@ app.register({
   name: "module_d_factory",
   async initialize(ctx) {
     /** @type {Object|null|undefined} */
-    const modA = await ctx.dependency("module_a");
+    // const modA = await ctx.dependency("module_a");
     /** @type {{
      *  name: string,
      *  sayHello(): string

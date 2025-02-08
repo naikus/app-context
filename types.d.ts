@@ -51,7 +51,7 @@ export interface AppContext extends Object {
    *  context.register(defn)
    * </code>
    */
-  async register(module: ModuleDefn): Promise<ModuleDefn>;
+  register(module: ModuleDefn): AppContext;
 
   /**
    * Gets a module by name or null if the module does not exist
