@@ -19,6 +19,7 @@ In your package.json, add it as a dependency
 }
 ```
 
+
 Define a module/service or multiple services (in their own files)
 ```js
 // File users/index.js
@@ -33,15 +34,13 @@ module.exports = {
    * @param {AppContext} context The application context
    */
   async initialize(context) {
-    /** @type {[Webapp, Knex]} */
-    const [webserver, db] = await context.dependency(["webserver", "persistence"]),
+    // "api-router" & "persistence" are modules that are registered with the app context elsewhere
+    const [apiRouter, db] = await context.dependency(["api-router", "db"]),
         service = createUserService(db);
 
-    webserver.routes(router => {
-      router.get("/users", (req, res) => {
-        const users = service.findAll();
-        res.send(users);
-      });
+    // Alternatively you can also use the following syntax
+    context.dependency(["api-router", "db"], (apiRouter, db) => {
+      // Do something
     });
 
     // Get notified for events from context or other modules
@@ -60,23 +59,24 @@ module.exports = {
 };
 ```
 
-Then in your main file, wire all the services. The order is not important, app-context will instantiate
-your services in the right order.
+
+Then in your main file, wire all the modules. The order is not important, app-context will instantiate
+your modules in the right order.
 ```js
-const webServer = require("./webserver"),
-  persistence = require("./persistence"),
-  auth = require("./auth"),
-  users = require("./users"),
-  AppContext = require("app-context"),
+const apiRouter = require("./api-router"),
+  db = require("./db"),
+  users = require("./users");
+
+const AppContext = require("app-context"),
   context = AppContext.create();
 
 // ....
 
 // Later in your main start function
-context.register(webServer)
-  .register(auth)
-  .register(users)
-  .register(persistence)
+context.register(users)
+  .register(apiRouter)
+  .register(db)
+  // You can also register inline modules
   .register({
     name: "config",
     initialize: () => ({
@@ -94,9 +94,10 @@ try {
 };
 ```
 
-#### How to get around
+
+### How to get around cyclic dependencies
 If your modules depend on one another, i.e. cyclic dependencies, you can get around by registering an
-event listener on app-context:
+event listener on app-context
 ```js
   const context = AppContex.create();
   context.register({
@@ -120,9 +121,10 @@ event listener on app-context:
     async initialize(ctx) {
       // This will throw error (cyclic dependencies)
       // const [moduleA] = await ctx.dependency("module_a");
+
+      // Instead do this:
       ctx.on("module:module_a", moduleA => {
         // module_a is now available
-        moduleA.sayHello();
       });
   
       // Return the actual module
