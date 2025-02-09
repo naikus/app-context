@@ -21,13 +21,12 @@ g.addE("d", "e");
 
 // Circular dependency, will throw error
 // g.addE("e", "a");
-console.log(g.checkDeps("a"));
 */
 
 
 
-app.on("module:", /** @param {string} mod */ (mod) => {
-  console.log(`[Example] Loaded module ${mod}`);
+app.on("module:", /** @param {string} mod */ (mod, data) => {
+  console.log(`[Example] Loaded module ${mod}`, data.name);
 });
 
 /**
@@ -79,7 +78,7 @@ app.register({
 app.register({
   name: "module_c",
   async initialize(ctx) {
-    // Circular dependency, will throw error
+    // cyclic dependency, will throw error
     /*
     ctx.dependency("module_b", (modB) => {
       console.log("found", modB.name);
@@ -88,6 +87,21 @@ app.register({
     // Can't call start() from within a module, will throw error
     // ctx.start();
 
+    // Modules can also register new modules, these will be initialized immediately
+    ctx.register({
+      name: "module_c:child",
+      async initialize(c) {
+        const [mc] = await c.dependency("module_c");
+        return {name:"ModuleC:Child"}
+      }
+    });
+
+    // This will also throw cyclic dependency error
+    /*
+    ctx.dependency("module_c:child", (modB) => {
+      console.log("found", modB.name);
+    });
+    */
     // throw new Error("Raising error!");
     return {
       title: "Hello",
