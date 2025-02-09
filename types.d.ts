@@ -66,7 +66,7 @@ export interface AppContext extends Object {
    * @param {Function} handler The handler to be called when all the dependencies are satisfied.
    * The handler is called with the dependencies as arguments in the order they were specified in
    * the first argument
-   * @return {Promise} only if handler is not specifed which resolves to all the dependencies
+   * @return {Promise<Array>} only if handler is not specifed which resolves to all the dependencies
    * @example
    * <code>
    *  context.dependency(["foo", "bar"], (foo, bar) => {
@@ -76,7 +76,7 @@ export interface AppContext extends Object {
    *  const [foo, bar] = await context.dependency(["foo", "bar"]);
    * </code>
    */
-  dependency(name: string|Array<string>, handler?: function(...*)): Promise<any|Array<any>> | void;
+  dependency(name: string|Array<string>, handler?: function(...*)): Promise<Array> | void;
 
   /**
    * Start the application context. This will initialize all the modules in the order they were registered

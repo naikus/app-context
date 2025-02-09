@@ -79,9 +79,9 @@ context.register(webServer)
   .register(persistence)
   .register({
     name: "config",
-    initialize: () => {
+    initialize: () => ({
       property: "value"
-    }
+    })
   });
 
 try {    

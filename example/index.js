@@ -59,11 +59,15 @@ app.register({
 app.register({
   name: "module_b",
   async initialize(ctx) {
-    const modC = await ctx.dependency(["module_c", "module_d_factory"]);
+    const [modC, modDFac] = await ctx.dependency(["module_c", "module_d_factory"]);
 
+    /*
     ctx.once("module:module_a", mod => {
       console.log("[module_b] Got module_a:", mod.name);
     });
+    */
+
+    console.log("[module_b] module_c", modC.name);
 
     return delayReturn({
       get name() {
@@ -74,7 +78,7 @@ app.register({
 });
 app.register({
   name: "module_c",
-  initialize(ctx) {
+  async initialize(ctx) {
     // Circular dependency, will throw error
     /*
     ctx.dependency("module_b", (modB) => {
@@ -86,6 +90,7 @@ app.register({
 
     // throw new Error("Raising error!");
     return {
+      title: "Hello",
       get name() {
         return "Module C";
       }
@@ -97,20 +102,21 @@ app.register({
   name: "module_d_factory",
   async initialize(ctx) {
     /** @type {Object|null|undefined} */
-    // const modA = await ctx.dependency("module_a");
+    const [modC] = await ctx.dependency("module_c");
+    console.log("[module_d_factory] module_c", modC.title);
     /** @type {{
      *  name: string,
      *  sayHello(): string
      * }} 
      */
     let module;
-    return () => {
+    return function dFactory() {
       if(!module) {
         const modA = ctx.getModule("module_a");
         module = {
-          name: "MODULE_D",
+          name: "Module D",
           sayHello() {
-            return `Hello from ${modA.name}`;
+            return `Hello to ${modA.name}`;
           }
         };
       }
@@ -119,15 +125,22 @@ app.register({
   }
 });
 
+// Call dependency() from outside a module
+/*
 app.dependency(["module_a"], (m) => {
-  console.log("found", m.name);
+  console.log("context.dependency() from outside a module:", m.name);
 })
+*/
 
-app.start().then(async () => {
-  console.log("Ready!");
-  const modFac = app.getModule("module_d_factory");
-  // console.log(modFac);
-  const mod = await modFac();
-  console.log(mod.sayHello());
-});
+app.start()
+  .then(async () => {
+    console.log("Ready!");
+    const modFac = app.getModule("module_d_factory");
+    // console.log(modFac);
+    const mod = await modFac();
+    console.log(mod.sayHello());
+  })
+  .catch(err => {
+    console.error(err);
+  });
 
