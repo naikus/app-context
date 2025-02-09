@@ -1,6 +1,6 @@
-const createAppContext = require("../lib/context"),
+const AppContext = require("../lib/context"),
     dGraph = require("../lib/dgraph"),
-    app = createAppContext();
+    app = AppContext.create();
 
 /*
 const g = dGraph();

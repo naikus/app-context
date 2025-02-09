@@ -94,4 +94,46 @@ try {
 };
 ```
 
+#### How to get around
+If your modules depend on one another, i.e. cyclic dependencies, you can get around by registering an
+event listener on app-context:
+```js
+  const context = AppContex.create();
+  context.register({
+    name: "module_a",
+    async initialize(ctx) {
+      const [moduleB] = await ctx.dependency("module_b");
+      // Do something with moduleB...
+      moduleB.sayHello();
+  
+      // Return the actual module
+      return {
+        sayHello() {
+          console.log("Hello from module_a");
+        }
+      };
+    }
+  });
+  
+  context.register({
+    name: "module_b",
+    async initialize(ctx) {
+      // This will throw error (cyclic dependencies)
+      // const [moduleA] = await ctx.dependency("module_a");
+      ctx.on("module:module_a", moduleA => {
+        // module_a is now available
+        moduleA.sayHello();
+      });
+  
+      // Return the actual module
+      return {
+        sayHello() {
+          console.log("Hello from module_b");
+        }
+      };
+    }
+  });
+  context.start();
+
+```
 

@@ -104,8 +104,3 @@ export interface AppContext extends Object {
 
   emit(event: string, ...args: any[]): void;
 }
-
-export interface AppContextModule {
-  create(): AppContext;
-  createNsEmitter(separator?: string): NsEventEmitter;
-}
