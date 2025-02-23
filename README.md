@@ -123,7 +123,7 @@ event listener on app-context
       // const [moduleA] = await ctx.dependency("module_a");
 
       // Instead do this:
-      ctx.on("module:module_a", moduleA => {
+      ctx.once("module:module_a", moduleA => {
         // module_a is now available
       });
   
