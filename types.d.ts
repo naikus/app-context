@@ -7,19 +7,16 @@ export interface ModuleDefn extends Object {
    */
   name: string;
 
-
-  /**
-   * The module impmentation
-   */
-  module?: any | null | undefined;
-
   /**
    * Initialize this module and return the actual module.
    * This module can by any object, value, service, function, etc.
    * @param {AppContext} context The application context
    */
   async initialize(context: AppContext): Promise<any> | any;
+
+  [key: string]: any;
 }
+
 
 /**
  * Application context provides access to other modules installed as part of the application. It provides
@@ -54,7 +51,7 @@ export interface AppContext extends Object {
    *  context.register(defn)
    * </code>
    */
-  async register(module: ModuleDefn): Promise<ModuleDefn>;
+  register(module: ModuleDefn): AppContext;
 
   /**
    * Gets a module by name or null if the module does not exist
@@ -69,7 +66,7 @@ export interface AppContext extends Object {
    * @param {Function} handler The handler to be called when all the dependencies are satisfied.
    * The handler is called with the dependencies as arguments in the order they were specified in
    * the first argument
-   * @return {Promise} only if handler is not specifed which resolves to all the dependencies
+   * @return {Promise<Array>} only if handler is not specifed which resolves to all the dependencies
    * @example
    * <code>
    *  context.dependency(["foo", "bar"], (foo, bar) => {
@@ -79,7 +76,14 @@ export interface AppContext extends Object {
    *  const [foo, bar] = await context.dependency(["foo", "bar"]);
    * </code>
    */
-  dependency(name: string|Array<string>, handler?: function(...*)): Promise<any|Array<any>> | void;
+  dependency(name: string|Array<string>, handler?: function(...*)): Promise<Array> | void;
+
+  /**
+   * Start the application context. This will initialize all the modules in the order they were registered
+   * and call the initialize function of each module.
+   * @return {Promise} A promise that resolves when all the modules are initialized
+   */
+  async start(): Promise<void>;
 
   /**
    * Register for a context event
@@ -99,9 +103,4 @@ export interface AppContext extends Object {
   once(event: string, handler: NsEventListener|EventListener ): Function;
 
   emit(event: string, ...args: any[]): void;
-}
-
-export interface AppContextModule {
-  create(): AppContext;
-  createNsEmitter(separator?: string): NsEventEmitter;
 }
