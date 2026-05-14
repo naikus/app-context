@@ -2,8 +2,10 @@ const createAppContext = require("../lib/context"),
     dGraph = require("../lib/dgraph"),
     app = createAppContext();
 
+let allModules = []
 app.on("module:", /** @param {string} mod */ (mod, data) => {
   console.log(`[Example]    Loaded module ${mod}`, data.name);
+  allModules.push(mod);
 });
 
 /**
@@ -70,7 +72,7 @@ app.register({
       async initialize(c) {
         const [mc] = await c.dependency("mod-c");
         return {
-          name:"Module C:Child"
+          name: "Module C:Child"
         }
       }
     });
@@ -110,11 +112,11 @@ app.register({
     let module;
     return function dFactory() {
       if(!module) {
-        const modA = ctx.getModule("mod-c");
+        const modC = ctx.getModule("mod-c");
         module = {
           name: "Module D",
           sayHello() {
-            return `Hello to ${modA.name}`;
+            return `Hello to ${modC.name}`;
           }
         };
       }
@@ -133,6 +135,7 @@ app.dependency(["mod-a"], (m) => {
 app.start()
   .then(async () => {
     console.log("Ready!");
+    console.log("Loaded modules in order", allModules.join(" -> "));
   })
   .catch(err => {
     console.error(err);
