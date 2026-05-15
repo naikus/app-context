@@ -5,15 +5,17 @@
   "main": "index.js",
   "types": "./lib/types.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest",
+    "build": "babel src -d dist"
   },
   "author": "aniketn3@gmail.com",
   "license": "MIT",
   "devDependencies": {
-    "@tsconfig/node20": "^20.1.4",
-    "eslint": "~7.1.0",
+    "@tsconfig/recommended": "^1.0.13",
+    "eslint": "^10.3.0",
     "eslint-config-google": "~0.14.0",
     "eslint-plugin-promise": "~4.2.1",
-    "eslint-plugin-standard": "~4.0.1"
+    "eslint-plugin-standard": "~4.0.1",
+    "vitest": "^4.1.6"
   }
 }

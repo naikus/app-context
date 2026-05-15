@@ -2,31 +2,10 @@ const createAppContext = require("../lib/context"),
     dGraph = require("../lib/dgraph"),
     app = createAppContext();
 
-/*
-const g = dGraph();
-g.addV("a");
-g.addV("b");
-g.addV("c");
-g.addV("d");
-g.addV("e");
-g.addV("f");
-
-g.addE("a", "b");
-g.addE("a", "c");
-g.addE("a", "d");
-g.addE("b", "c");
-g.addE("b", "d");
-g.addE("c", "d");
-g.addE("d", "e");
-
-// Circular dependency, will throw error
-// g.addE("e", "a");
-*/
-
-
-
+let allModules = []
 app.on("module:", /** @param {string} mod */ (mod, data) => {
-  console.log(`[Example] Loaded module ${mod}`, data.name);
+  console.log(`[Example]    Loaded module ${mod}`, data.name);
+  allModules.push(mod);
 });
 
 /**
@@ -45,9 +24,9 @@ async function delayReturn(object, ms = 1000) {
 
 
 app.register({
-  name: "module_a",
+  name: "mod-a",
   async initialize(ctx) {
-    const [modB, modC, modDFac] = await ctx.dependency(["module_b", "module_c", "module_d_factory"]);
+    const [modB, modC, modDFac] = await ctx.dependency(["mod-b", "mod-c", "mod-d-fac"]);
     return {
       get name() {
         return `Module A`;
@@ -56,17 +35,17 @@ app.register({
   }
 });
 app.register({
-  name: "module_b",
+  name: "mod-b",
   async initialize(ctx) {
-    const [modC, modDFac] = await ctx.dependency(["module_c", "module_d_factory"]);
+    const [modC, modDFac] = await ctx.dependency(["mod-c", "mod-d-fac"]);
 
     /*
-    ctx.once("module:module_a", mod => {
-      console.log("[module_b] Got module_a:", mod.name);
+    ctx.once("module:mod-a", mod => {
+      console.log("[mod-b] Got mod-a:", mod.name);
     });
     */
 
-    console.log("[module_b] module_c", modC.name);
+    console.log("[mod-b]      mod-c", modC.name);
 
     return delayReturn({
       get name() {
@@ -76,11 +55,11 @@ app.register({
   }
 });
 app.register({
-  name: "module_c",
+  name: "mod-c",
   async initialize(ctx) {
     // cyclic dependency, will throw error
     /*
-    ctx.dependency("module_b", (modB) => {
+    ctx.dependency("mod-b", (modB) => {
       console.log("found", modB.name);
     });
     */
@@ -89,20 +68,27 @@ app.register({
 
     // Modules can also register new modules, these will be initialized immediately
     ctx.register({
-      name: "module_c:child",
+      name: "mod-c:child",
       async initialize(c) {
-        const [mc] = await c.dependency("module_c");
-        return {name:"ModuleC:Child"}
+        const [mc] = await c.dependency("mod-c");
+        return {
+          name: "Module C:Child"
+        }
       }
     });
 
     // This will also throw cyclic dependency error
     /*
-    ctx.dependency("module_c:child", (modB) => {
+    ctx.dependency("mod-c:child", (modB) => {
       console.log("found", modB.name);
     });
     */
-    // throw new Error("Raising error!");
+
+    ctx.once("module:mod-d-fac", dFac => {
+      const modD = dFac();
+      console.log("[mod-c]     ", modD.sayHello());
+    });
+    
     return {
       title: "Hello",
       get name() {
@@ -113,11 +99,11 @@ app.register({
 });
 // Workaround for circular deps, create a factory
 app.register({
-  name: "module_d_factory",
+  name: "mod-d-fac",
   async initialize(ctx) {
     /** @type {Object|null|undefined} */
-    const [modC] = await ctx.dependency("module_c");
-    console.log("[module_d_factory] module_c", modC.title);
+    const [modC] = await ctx.dependency("mod-c");
+    console.log("[mod-d-fac]  mod-c", modC.title);
     /** @type {{
      *  name: string,
      *  sayHello(): string
@@ -126,11 +112,11 @@ app.register({
     let module;
     return function dFactory() {
       if(!module) {
-        const modA = ctx.getModule("module_a");
+        const modC = ctx.getModule("mod-c");
         module = {
           name: "Module D",
           sayHello() {
-            return `Hello to ${modA.name}`;
+            return `Hello to ${modC.name}`;
           }
         };
       }
@@ -141,7 +127,7 @@ app.register({
 
 // Call dependency() from outside a module
 /*
-app.dependency(["module_a"], (m) => {
+app.dependency(["mod-a"], (m) => {
   console.log("context.dependency() from outside a module:", m.name);
 })
 */
@@ -149,10 +135,7 @@ app.dependency(["module_a"], (m) => {
 app.start()
   .then(async () => {
     console.log("Ready!");
-    const modFac = app.getModule("module_d_factory");
-    // console.log(modFac);
-    const mod = await modFac();
-    console.log(mod.sayHello());
+    console.log("Loaded modules in order", allModules.join(" -> "));
   })
   .catch(err => {
     console.error(err);
